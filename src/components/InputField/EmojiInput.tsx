@@ -46,8 +46,7 @@ const EmojiInput = ({
     }
   }, [chosenEmoji])
 
-  const onEmojiClick = (event: any, emojiObject: { emoji?: any }) => {
-    event
+  const onEmojiClick = (emojiObject: { emoji?: any }) => {
     setChosenEmoji(emojiObject)
   }
 
