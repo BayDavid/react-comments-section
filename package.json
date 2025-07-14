@@ -73,11 +73,12 @@
     "@types/uuid": "^8.3.4",
     "draft-js": "^0.11.7",
     "draftjs-to-html": "^0.9.1",
-    "emoji-picker-react": "^3.5.1",
+    "emoji-picker-react": "^4.12.3",
     "html-to-draftjs": "^1.5.0",
     "react-comments-section": "^3.0.1",
     "react-draft-wysiwyg": "^1.14.7",
     "react-responsive-modal": "^6.2.0",
-    "sass": "^1.51.0"
+    "sass": "^1.51.0",
+    "uuid": "^11.1.0"
   }
 }
