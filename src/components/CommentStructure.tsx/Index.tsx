@@ -22,6 +22,8 @@ interface CommentStructureProps {
   parentId?: string
   replyMode: boolean
   showTimestamp?: boolean
+  disableDeleteAction?: boolean
+  disableReplySecoundLevelAction?: boolean
   logIn: {
     loginLink?: string | (() => void)
     signUpLink?: string | (() => void)
@@ -31,24 +33,26 @@ interface CommentStructureProps {
 }
 
 const CommentStructure = ({
-  info,
-  editMode,
-  parentId,
-  replyMode,
-  showTimestamp
-}: CommentStructureProps) => {
+                            info,
+                            editMode,
+                            parentId,
+                            replyMode,
+                            showTimestamp,
+                            disableDeleteAction = false,
+                            disableReplySecoundLevelAction = false
+                          }: CommentStructureProps) => {
   const globalStore: any = useContext(GlobalContext)
   const currentUser = globalStore.currentUserData
 
   const optionsMenu = () => {
     return (
-      <div className='userActions'>
+      <div className="userActions">
         {info.userId === currentUser.currentUserId && (
           <Menu
             menuButton={
-              <button className='actionsBtn'>
+              <button className="actionsBtn">
                 {' '}
-                <div className='optionIcon' />
+                <div className="optionIcon" />
               </button>
             }
           >
@@ -57,9 +61,11 @@ const CommentStructure = ({
             >
               edit
             </MenuItem>
-            <MenuItem>
-              <DeleteModal comId={info.comId} parentId={parentId} />
-            </MenuItem>
+            {!disableDeleteAction && (
+              <MenuItem>
+                <DeleteModal comId={info.comId} parentId={parentId} />
+              </MenuItem>
+            )}
           </Menu>
         )}
       </div>
@@ -92,13 +98,13 @@ const CommentStructure = ({
 
   const userInfo = () => {
     return (
-      <div className='commentsTwo'>
-        <a className='userLink' target='_blank' href={info.userProfile}>
+      <div className="commentsTwo">
+        <a className="userLink" target="_blank" href={info.userProfile}>
           <div>
             <img
               src={info.avatarUrl}
-              alt='userIcon'
-              className='imgdefault'
+              alt="userIcon"
+              className="imgdefault"
               style={
                 globalStore.imgStyle ||
                 (!globalStore.replyTop
@@ -107,9 +113,9 @@ const CommentStructure = ({
               }
             />
           </div>
-          <div className='fullName'>
+          <div className="fullName">
             {info.fullName}
-            <span className='commenttimestamp'>
+            <span className="commenttimestamp">
               {showTimestamp &&
                 (info.timestamp == null ? null : timeAgo(info.timestamp))}
             </span>
@@ -121,8 +127,8 @@ const CommentStructure = ({
 
   const replyTopSection = () => {
     return (
-      <div className='halfDiv'>
-        <div className='userInfo'>
+      <div className="halfDiv">
+        <div className="userInfo">
           <div>{info.text}</div>
           {userInfo()}
         </div>
@@ -133,28 +139,28 @@ const CommentStructure = ({
 
   const replyBottomSection = () => {
     return (
-      <div className='halfDiv'>
-        <div className='userInfo'>
+      <div className="halfDiv">
+        <div className="userInfo">
           {userInfo()}
           {globalStore.advancedInput ? (
             <div
-              className='infoStyle'
+              className="infoStyle"
               dangerouslySetInnerHTML={{
                 __html: info.text
               }}
             />
           ) : (
-            <div className='infoStyle'>{info.text}</div>
+            <div className="infoStyle">{info.text}</div>
           )}
           <div style={{ marginLeft: 32 }}>
             {' '}
-            {currentUser && (
+            {(currentUser && !disableReplySecoundLevelAction) && (
               <div>
                 <button
-                  className='replyBtn'
+                  className="replyBtn"
                   onClick={() => globalStore.handleAction(info.comId, false)}
                 >
-                  <div className='replyIcon' />
+                  <div className="replyIcon" />
                   <span style={{ marginLeft: 17 }}>Reply</span>
                 </button>
               </div>
@@ -169,7 +175,7 @@ const CommentStructure = ({
   const actionModeSection = (mode: string) => {
     if (mode === 'reply') {
       return (
-        <div className='replysection'>
+        <div className="replysection">
           {globalStore.replyTop ? replyTopSection() : replyBottomSection()}
           <InputField
             formStyle={{
@@ -206,10 +212,10 @@ const CommentStructure = ({
       {editMode
         ? actionModeSection('edit')
         : replyMode
-        ? actionModeSection('reply')
-        : globalStore.replyTop
-        ? replyTopSection()
-        : replyBottomSection()}
+          ? actionModeSection('reply')
+          : globalStore.replyTop
+            ? replyTopSection()
+            : replyBottomSection()}
     </div>
   )
 }

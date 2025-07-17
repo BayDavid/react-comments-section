@@ -19,7 +19,9 @@ interface CommentSectionProps {
   hrStyle?: object
   titleStyle?: object
   customNoComment?: Function
-  showTimestamp?: boolean
+  showTimestamp?: boolean,
+  disableDeleteAction?: boolean
+  disableReplySecoundLevelAction?: boolean
 }
 
 const CommentSection = ({
@@ -28,7 +30,9 @@ const CommentSection = ({
   hrStyle,
   titleStyle,
   customNoComment,
-  showTimestamp = true
+  showTimestamp = true,
+  disableDeleteAction = false,
+  disableReplySecoundLevelAction = false
 }: CommentSectionProps) => {
   const handleLogin = () => {
     if (typeof logIn.onLogin === 'function') {
@@ -104,6 +108,7 @@ const CommentSection = ({
                   }
                   logIn={logIn}
                   showTimestamp={showTimestamp}
+                  disableDeleteAction={disableDeleteAction}
                 />
                 {i.replies &&
                   i.replies.length > 0 &&
@@ -125,6 +130,8 @@ const CommentSection = ({
                           }
                           logIn={logIn}
                           showTimestamp={showTimestamp}
+                          disableDeleteAction={disableDeleteAction}
+                          disableReplySecoundLevelAction={disableReplySecoundLevelAction}
                         />
                       </div>
                     )

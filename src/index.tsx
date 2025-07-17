@@ -38,6 +38,8 @@ interface CommentSectionProps {
   advancedInput?: boolean
   placeHolder?: string
   showTimestamp?: boolean
+  disableDeleteAction?: boolean
+  disableReplySecoundLevelAction?: boolean
   commentData: Array<{
     userId: string
     comId: string
@@ -73,6 +75,8 @@ export const CommentSection = ({
   imgStyle,
   replyTop,
   commentsCount,
+  disableDeleteAction,
+  disableReplySecoundLevelAction,
   commentData,
   placeHolder,
   showTimestamp,
@@ -116,6 +120,8 @@ export const CommentSection = ({
         titleStyle={titleStyle}
         customNoComment={customNoComment}
         showTimestamp={showTimestamp}
+        disableDeleteAction={disableDeleteAction}
+        disableReplySecoundLevelAction={disableReplySecoundLevelAction}
       />
     </GlobalProvider>
   )
