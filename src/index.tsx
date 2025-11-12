@@ -60,6 +60,7 @@ interface CommentSectionProps {
         }>
       | undefined
   }>
+  sortedByLatest?: boolean // neu
 }
 
 export const CommentSection = ({
@@ -89,7 +90,8 @@ export const CommentSection = ({
   onEditAction,
   customNoComment,
   currentData,
-  advancedInput
+  advancedInput,
+  sortedByLatest = false
 }: CommentSectionProps) => {
   return (
     <GlobalProvider
@@ -122,6 +124,7 @@ export const CommentSection = ({
         showTimestamp={showTimestamp}
         disableDeleteAction={disableDeleteAction}
         disableReplySecoundLevelAction={disableReplySecoundLevelAction}
+        sortedByLatest={sortedByLatest}
       />
     </GlobalProvider>
   )

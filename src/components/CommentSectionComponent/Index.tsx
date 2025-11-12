@@ -22,6 +22,7 @@ interface CommentSectionProps {
   showTimestamp?: boolean,
   disableDeleteAction?: boolean
   disableReplySecoundLevelAction?: boolean
+  sortedByLatest?: boolean
 }
 
 const CommentSection = ({
@@ -32,7 +33,8 @@ const CommentSection = ({
   customNoComment,
   showTimestamp = true,
   disableDeleteAction = false,
-  disableReplySecoundLevelAction = false
+  disableReplySecoundLevelAction = false,
+  sortedByLatest = false
 }: CommentSectionProps) => {
   const handleLogin = () => {
     if (typeof logIn.onLogin === 'function') {
@@ -64,6 +66,27 @@ const CommentSection = ({
     return count
   }
 
+  const sortCommentsByLatest = (arr: any[]) => {
+    return [...arr]
+      .sort((a, b) => {
+        const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0
+        const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0
+        return bTime - aTime
+      })
+      .map(c => ({
+        ...c,
+        replies: c.replies && Array.isArray(c.replies)
+          ? [...c.replies].sort((a: any, b: any) => {
+              const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0
+              const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0
+              return bTime - aTime
+            })
+          : c.replies
+      }))
+  }
+
+  const renderData = sortedByLatest ? sortCommentsByLatest(globalStore.data) : globalStore.data
+
   return (
     <div className='overlay' style={overlayStyle}>
       <span className='comment-title' style={titleStyle}>
@@ -81,8 +104,8 @@ const CommentSection = ({
         />
       )}
 
-      {globalStore.data.length > 0 ? (
-        globalStore.data.map(
+      {renderData.length > 0 ? (
+        renderData.map(
           (i: {
             userId: string
             comId: string
@@ -96,16 +119,8 @@ const CommentSection = ({
               <div key={i.comId}>
                 <CommentStructure
                   info={i}
-                  editMode={
-                    _.indexOf(globalStore.editArr, i.comId) === -1
-                      ? false
-                      : true
-                  }
-                  replyMode={
-                    _.indexOf(globalStore.replyArr, i.comId) === -1
-                      ? false
-                      : true
-                  }
+                  editMode={_.indexOf(globalStore.editArr, i.comId) !== -1}
+                  replyMode={_.indexOf(globalStore.replyArr, i.comId) !== -1}
                   logIn={logIn}
                   showTimestamp={showTimestamp}
                   disableDeleteAction={disableDeleteAction}
@@ -118,16 +133,8 @@ const CommentSection = ({
                         <CommentStructure
                           info={j}
                           parentId={i.comId}
-                          editMode={
-                            _.indexOf(globalStore.editArr, j.comId) === -1
-                              ? false
-                              : true
-                          }
-                          replyMode={
-                            _.indexOf(globalStore.replyArr, j.comId) === -1
-                              ? false
-                              : true
-                          }
+                          editMode={_.indexOf(globalStore.editArr, j.comId) !== -1}
+                          replyMode={_.indexOf(globalStore.replyArr, j.comId) !== -1}
                           logIn={logIn}
                           showTimestamp={showTimestamp}
                           disableDeleteAction={disableDeleteAction}
