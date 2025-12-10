@@ -1,24 +1,61 @@
-import React, { useState, useEffect } from 'react'
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
-import { useContext } from 'react'
+import React, { useState, useEffect, useContext, FormEvent } from 'react'
 import { GlobalContext } from '../../context/Provider'
-import { EditorState, ContentState, convertToRaw } from 'draft-js'
-import { Editor } from 'react-draft-wysiwyg'
-import draftToHtml from 'draftjs-to-html'
-import htmlToDraft from 'html-to-draftjs'
 
 interface AdvancedInputProps {
-  formStyle?: object
-  handleSubmit: Function
+  formStyle?: React.CSSProperties
+  handleSubmit: (e: FormEvent, html: string) => Promise<void> | void
   mode?: string
-  cancelBtnStyle?: object
-  submitBtnStyle?: object
+  cancelBtnStyle?: React.CSSProperties
+  submitBtnStyle?: React.CSSProperties
   comId?: string
-  imgStyle?: object
-  imgDiv?: object
+  imgStyle?: React.CSSProperties
+  imgDiv?: React.CSSProperties
   customImg?: string
   text: string
   placeHolder?: string
+}
+
+// sehr einfache Sanitization: nur eine Handvoll erlaubter Tags/Attribute, alles andere wird entfernt
+const sanitizeHtml = (input: string): string => {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(input, 'text/html')
+
+  const allowedTags = new Set([
+    'P',
+    'B',
+    'STRONG',
+    'I',
+    'EM',
+    'U',
+    'S',
+    'UL',
+    'OL',
+    'LI',
+    'BR',
+    'CODE',
+    'PRE',
+    'BLOCKQUOTE'
+  ])
+
+  const walk = (node: Node) => {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as HTMLElement
+      if (!allowedTags.has(el.tagName)) {
+        const parent = el.parentNode
+        while (el.firstChild) parent?.insertBefore(el.firstChild, el)
+        parent?.removeChild(el)
+        return
+      }
+      // entferne alle Attribute (kein onclick, style, etc.)
+      while (el.attributes.length > 0) {
+        el.removeAttribute(el.attributes[0].name)
+      }
+    }
+    Array.from(node.childNodes).forEach(walk)
+  }
+
+  Array.from(doc.body.childNodes).forEach(walk)
+  return doc.body.innerHTML || '<p></p>'
 }
 
 const AdvancedInput = ({
@@ -34,36 +71,34 @@ const AdvancedInput = ({
   text,
   placeHolder
 }: AdvancedInputProps) => {
-  const [html, setHtml] = useState('<p></p>')
   const globalStore: any = useContext(GlobalContext)
+
+  const [html, setHtml] = useState<string>('<p></p>')
+  const [editText, setEditText] = useState<string>('<p></p>')
+
   useEffect(() => {
-    if (text != '') {
-      setHtml(text)
+    if (text !== '') {
+      const safe = sanitizeHtml(text)
+      setHtml(safe)
+      setEditText(safe)
     }
   }, [text])
-  useEffect(() => {
-    if (html != '<p></p>') {
-      setEditor(EditorState.createWithContent(contentState))
-    }
-  }, [html])
 
-  const contentBlock = htmlToDraft(html)
-  const contentState = ContentState.createFromBlockArray(
-    contentBlock.contentBlocks
-  )
-  const [editorState, setEditor] = useState(
-    EditorState.createWithContent(contentState)
-  )
-  const [editText, setEditText] = useState<string>('')
-
-  const onEditorStateChange: Function = (editorState: any) => {
-    setEditor(editorState)
+  const onInput = (e: React.FormEvent<HTMLDivElement>) => {
+    const value = (e.currentTarget as HTMLDivElement).innerHTML
+    const safe = sanitizeHtml(value)
+    setEditText(safe)
   }
-  useEffect(() => {
-    setEditText(
-      draftToHtml(convertToRaw(editorState.getCurrentContent())).trim()
-    )
-  }, [editorState])
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (editText === '<p></p>') return
+    await handleSubmit(e, editText)
+    setHtml('<p></p>')
+    setEditText('<p></p>')
+  }
+
+  const canSubmit = editText !== '<p></p>'
 
   return (
     <div className='advanced-overlay'>
@@ -71,6 +106,7 @@ const AdvancedInput = ({
         <a
           target='_blank'
           href={globalStore.currentUserData.currentUserProfile}
+          rel='noreferrer'
         >
           <img
             src={
@@ -88,93 +124,22 @@ const AdvancedInput = ({
         <form
           className='form advanced-form '
           style={globalStore.formStyle || formStyle}
-          onSubmit={async (e) =>
-            editText != '<p></p>'
-              ? (await handleSubmit(e, editText),
-                setEditor(EditorState.createEmpty()))
-              : null
-          }
+          onSubmit={onSubmit}
         >
           <div className='advanced-border'>
-            <Editor
-              editorState={editorState}
-              placeholder={placeHolder ? placeHolder : 'Type your reply here.'}
-              onEditorStateChange={(editorState) =>
-                onEditorStateChange(editorState)
-              }
-              toolbar={{
-                options: [
-                  'inline',
-                  'blockType',
-                  'list',
-                  'colorPicker',
-                  'link',
-                  'emoji',
-                  'image'
-                ],
-                link: {
-                  inDropdown: false,
-                  className: undefined,
-                  component: undefined,
-                  popupClassName: undefined,
-                  dropdownClassName: undefined,
-                  showOpenOptionOnHover: true,
-                  defaultTargetOption: '_self',
-                  options: ['link'],
-                  linkCallback: undefined
-                },
-                image: {
-                  className: undefined,
-                  component: undefined,
-                  popupClassName: undefined,
-                  urlEnabled: true,
-                  uploadEnabled: true,
-                  alignmentEnabled: true,
-                  uploadCallback: undefined,
-                  previewImage: false,
-                  inputAccept:
-                    'image/gif,image/jpeg,image/jpg,image/png,image/svg',
-                  alt: { present: false, mandatory: false },
-                  defaultSize: {
-                    height: 'auto',
-                    width: 'auto'
-                  }
-                },
-                inline: {
-                  inDropdown: false,
-                  className: undefined,
-                  component: undefined,
-                  dropdownClassName: undefined,
-                  options: [
-                    'bold',
-                    'italic',
-                    'underline',
-                    'strikethrough',
-                    'monospace'
-                  ]
-                },
-                blockType: {
-                  inDropdown: true,
-                  options: ['Normal', 'Blockquote', 'Code'],
-                  className: undefined,
-                  component: undefined,
-                  dropdownClassName: undefined
-                },
-                list: {
-                  inDropdown: false,
-                  className: undefined,
-                  component: undefined,
-                  dropdownClassName: undefined,
-                  options: ['unordered', 'ordered']
-                }
+            <div
+              className='advanced-editor'
+              contentEditable
+              suppressContentEditableWarning
+              onInput={onInput}
+              dangerouslySetInnerHTML={{
+                __html: html === '<p></p>' ? '' : html
               }}
+              aria-label={
+                placeHolder ? placeHolder : 'Type your reply here.'
+              }
             />
           </div>
-          {/* <div
-            dangerouslySetInnerHTML={{
-              __html: text
-            }}
-          /> */}
           <div className='advanced-btns'>
             {mode && (
               <button
@@ -193,14 +158,8 @@ const AdvancedInput = ({
             <button
               className='advanced-post postBtn'
               type='submit'
-              disabled={editText === '<p></p>' ? true : false}
+              disabled={!canSubmit}
               style={globalStore.submitBtnStyle || submitBtnStyle}
-              onClick={async (e) =>
-                editText != '<p></p>'
-                  ? (await handleSubmit(e, editText),
-                    setEditor(EditorState.createEmpty()))
-                  : null
-              }
             >
               Post
             </button>
