@@ -1,0 +1,29 @@
+import './CommentStructure.scss';
+import '@szhsin/react-menu/dist/core.css';
+import React from 'react';
+interface CommentStructureProps {
+    info: {
+        userId: string;
+        comId: string;
+        fullName: string;
+        avatarUrl: string;
+        text: string;
+        userProfile?: string;
+        timestamp?: string;
+        replies?: Array<object> | undefined;
+    };
+    editMode: boolean;
+    parentId?: string;
+    replyMode: boolean;
+    showTimestamp?: boolean;
+    disableDeleteAction?: boolean;
+    disableReplySecoundLevelAction?: boolean;
+    logIn: {
+        loginLink?: string | (() => void);
+        signUpLink?: string | (() => void);
+        onLogin?: string | (() => void);
+        onSignUp?: string | (() => void);
+    };
+}
+declare const CommentStructure: ({ info, editMode, parentId, replyMode, showTimestamp, disableDeleteAction, disableReplySecoundLevelAction }: CommentStructureProps) => React.JSX.Element;
+export default CommentStructure;

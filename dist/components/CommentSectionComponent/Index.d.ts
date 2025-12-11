@@ -1,0 +1,20 @@
+import './CommentSection.css';
+import React from 'react';
+interface CommentSectionProps {
+    overlayStyle?: object;
+    logIn: {
+        loginLink?: string | (() => void);
+        signUpLink?: string | (() => void);
+        onLogin?: string | (() => void);
+        onSignUp?: string | (() => void);
+    };
+    hrStyle?: object;
+    titleStyle?: object;
+    customNoComment?: Function;
+    showTimestamp?: boolean;
+    disableDeleteAction?: boolean;
+    disableReplySecoundLevelAction?: boolean;
+    sortedByLatest?: boolean;
+}
+declare const CommentSection: ({ overlayStyle, logIn, hrStyle, titleStyle, customNoComment, showTimestamp, disableDeleteAction, disableReplySecoundLevelAction, sortedByLatest }: CommentSectionProps) => React.JSX.Element;
+export default CommentSection;
